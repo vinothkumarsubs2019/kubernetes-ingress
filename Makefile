@@ -5,7 +5,6 @@ TAG = $(VERSION)
 PREFIX = nginx/nginx-ingress
 
 DOCKER_TEST_RUN = docker run --rm -v $(shell pwd):/go/src/github.com/nginxinc/kubernetes-ingress -w /go/src/github.com/nginxinc/kubernetes-ingress
-DOCKER_BUILD_RUN = docker run --rm -v $(shell pwd):/go/src/github.com/nginxinc/kubernetes-ingress -w /go/src/github.com/nginxinc/kubernetes-ingress/cmd/nginx-ingress/
 GOLANG_CONTAINER = golang:1.13
 DOCKERFILEPATH = build
 DOCKERFILE = Dockerfile # note, this can be overwritten e.g. can be DOCKERFILE=DockerFileForPlus
@@ -17,10 +16,10 @@ DOCKER_BUILD_OPTIONS =
 
 GIT_COMMIT=$(shell git rev-parse --short HEAD)
 
+export DOCKER_BUILDKIT = 1
+
 nginx-ingress:
-ifeq ($(BUILD_IN_CONTAINER),1)
-	$(DOCKER_BUILD_RUN) -e CGO_ENABLED=0 -e GO111MODULE=on -e GOFLAGS='-mod=vendor' $(GOLANG_CONTAINER) go build -installsuffix cgo -ldflags "-w -X main.version=${VERSION} -X main.gitCommit=${GIT_COMMIT}" -o /go/src/github.com/nginxinc/kubernetes-ingress/nginx-ingress
-else
+ifneq ($(BUILD_IN_CONTAINER),1)
 	CGO_ENABLED=0 GO111MODULE=on GOFLAGS='-mod=vendor' GOOS=linux go build -installsuffix cgo -ldflags "-w -X main.version=${VERSION} -X main.gitCommit=${GIT_COMMIT}" -o nginx-ingress github.com/nginxinc/kubernetes-ingress/cmd/nginx-ingress
 endif
 
@@ -49,7 +48,11 @@ endif
 
 container: test verify-codegen nginx-ingress certificate-and-key
 	cp $(DOCKERFILEPATH)/$(DOCKERFILE) ./Dockerfile
-	docker build $(DOCKER_BUILD_OPTIONS) --build-arg IC_VERSION=$(VERSION)-$(GIT_COMMIT) -f Dockerfile -t $(PREFIX):$(TAG) .
+ifeq ($(BUILD_IN_CONTAINER),1)
+	docker build $(DOCKER_BUILD_OPTIONS) --build-arg IC_VERSION=$(VERSION)-$(GIT_COMMIT) --target container -f Dockerfile -t $(PREFIX):$(TAG) .
+else
+	docker build $(DOCKER_BUILD_OPTIONS) --build-arg IC_VERSION=$(VERSION)-$(GIT_COMMIT) --target local -f Dockerfile -t $(PREFIX):$(TAG) .
+endif
 
 push: container
 ifeq ($(PUSH_TO_GCR),1)

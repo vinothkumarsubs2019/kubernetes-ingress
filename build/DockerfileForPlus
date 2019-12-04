@@ -1,4 +1,4 @@
-FROM debian:stretch-slim
+FROM debian:stretch-slim AS base
 
 LABEL maintainer="NGINX Docker Maintainers <docker-maint@nginx.com>"
 
@@ -7,8 +7,7 @@ ARG IC_VERSION
 
 # Download certificate and key from the customer portal (https://cs.nginx.com)
 # and copy to the build context
-COPY nginx-repo.crt /etc/ssl/nginx/
-COPY nginx-repo.key /etc/ssl/nginx/
+COPY nginx-repo.crt nginx-repo.key /etc/ssl/nginx/
 
 # Make sure the certificate and key have correct permissions
 RUN chmod 644 /etc/ssl/nginx/*
@@ -51,7 +50,7 @@ RUN ln -sf /proc/1/fd/1 /var/log/nginx/access.log \
 	&& ln -sf /proc/1/fd/1 /var/log/nginx/stream-access.log \
 	&& ln -sf /proc/1/fd/2 /var/log/nginx/error.log
 
-RUN  mkdir -p /var/lib/nginx \
+RUN mkdir -p /var/lib/nginx \
 	&& mkdir -p /etc/nginx/secrets \
 	&& chown -R nginx:0 /etc/nginx \
 	&& chown -R nginx:0 /var/cache/nginx \
@@ -61,7 +60,9 @@ RUN  mkdir -p /var/lib/nginx \
 
 EXPOSE 80 443
 
-COPY nginx-ingress internal/configs/version1/nginx-plus.ingress.tmpl internal/configs/version1/nginx-plus.tmpl internal/configs/version2/nginx-plus.virtualserver.tmpl  /
+COPY internal/configs/version1/nginx-plus.ingress.tmpl \
+	internal/configs/version1/nginx-plus.tmpl \
+	internal/configs/version2/nginx-plus.virtualserver.tmpl /
 
 # Uncomment the line below if you would like to add the default.pem to the image
 # and use it as a certificate and key for the default server
@@ -70,3 +71,18 @@ COPY nginx-ingress internal/configs/version1/nginx-plus.ingress.tmpl internal/co
 USER nginx
 
 ENTRYPOINT ["/nginx-ingress"]
+
+
+FROM base AS local
+COPY nginx-ingress /
+
+
+FROM golang:1.13 AS builder
+WORKDIR /go/src/github.com/nginxinc/kubernetes-ingress/nginx-ingress/cmd/nginx-ingress
+COPY . /go/src/github.com/nginxinc/kubernetes-ingress/nginx-ingress/
+RUN CGO_ENABLED=0 GOFLAGS='-mod=vendor' \
+	go build -installsuffix cgo -ldflags "-w -X main.version=${VERSION} -X main.gitCommit=${GIT_COMMIT}" -o /nginx-ingress
+
+
+FROM base AS container
+COPY --from=builder /nginx-ingress /

@@ -1,4 +1,4 @@
-FROM nginx:1.17.7
+FROM nginx:1.17.7 AS base
 
 # forward nginx access and error logs to stdout and stderr of the ingress
 # controller process
@@ -19,7 +19,9 @@ RUN mkdir -p /var/lib/nginx \
 	&& rm /etc/nginx/conf.d/* \
 	&& rm -rf /var/lib/apt/lists/*
 
-COPY nginx-ingress internal/configs/version1/nginx.ingress.tmpl internal/configs/version1/nginx.tmpl internal/configs/version2/nginx.virtualserver.tmpl /
+COPY internal/configs/version1/nginx.ingress.tmpl \
+	internal/configs/version1/nginx.tmpl \
+	internal/configs/version2/nginx.virtualserver.tmpl /
 
 # Uncomment the line below if you would like to add the default.pem to the image
 # and use it as a certificate and key for the default server
@@ -28,3 +30,18 @@ COPY nginx-ingress internal/configs/version1/nginx.ingress.tmpl internal/configs
 USER nginx
 
 ENTRYPOINT ["/nginx-ingress"]
+
+
+FROM base AS local
+COPY nginx-ingress /
+
+
+FROM golang:1.13 AS builder
+WORKDIR /go/src/github.com/nginxinc/kubernetes-ingress/nginx-ingress/cmd/nginx-ingress
+COPY . /go/src/github.com/nginxinc/kubernetes-ingress/nginx-ingress/
+RUN CGO_ENABLED=0 GOFLAGS='-mod=vendor' \
+	go build -installsuffix cgo -ldflags "-w -X main.version=${VERSION} -X main.gitCommit=${GIT_COMMIT}" -o /nginx-ingress
+
+
+FROM base AS container
+COPY --from=builder /nginx-ingress /
