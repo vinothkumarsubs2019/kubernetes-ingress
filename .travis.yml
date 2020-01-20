@@ -21,7 +21,8 @@ before_install:
   && GO111MODULE=on FOSSA_API_KEY=${fossapush} ./fossa analyze -t kubernetes-ingress -b ${TRAVIS_BRANCH}; fi
 - echo "Checking ingress controller for linting errors" && wget -O - -q ${golangci_lint} | sh -s v1.17.1
 - export PATH="$PATH:./bin" && make lint
-addons:
-  apt:
-    packages:
-      - docker-ce
+- echo "Updating docker to latest stable release"
+- curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+- sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+- sudo apt-get update
+- sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
