@@ -20,6 +20,9 @@ export DOCKER_BUILDKIT = 1
 lint:
 	golangci-lint run
 
+test:
+	GO111MODULE=on GOFLAGS='-mod=vendor' go test ./...
+
 verify-codegen:
 	./hack/verify-codegen.sh
 
@@ -34,8 +37,7 @@ endif
 binary:
 	CGO_ENABLED=0 GO111MODULE=on GOFLAGS='-mod=vendor' GOOS=linux go build -installsuffix cgo -ldflags "-w -X main.version=${VERSION} -X main.gitCommit=${GIT_COMMIT}" -o nginx-ingress github.com/nginxinc/kubernetes-ingress/cmd/nginx-ingress
 
-local-container: binary verify-codegen certificate-and-key
-	GO111MODULE=on GOFLAGS='-mod=vendor' go test ./...
+local-container: test binary verify-codegen certificate-and-key
 	docker build $(DOCKER_BUILD_OPTIONS) --build-arg IC_VERSION=$(VERSION)-$(GIT_COMMIT) --target local -f $(DOCKERFILEPATH)/$(DOCKERFILE) -t $(PREFIX):$(TAG) .
 
 container: certificate-and-key
