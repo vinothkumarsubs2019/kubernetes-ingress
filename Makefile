@@ -41,10 +41,9 @@ local-container: test binary verify-codegen certificate-and-key
 	docker build $(DOCKER_BUILD_OPTIONS) --build-arg IC_VERSION=$(VERSION)-$(GIT_COMMIT) --target local -f $(DOCKERFILEPATH)/$(DOCKERFILE) -t $(PREFIX):$(TAG) .
 
 container: certificate-and-key
-	$(DOCKER_TEST_RUN) -e GO111MODULE=on -e GOFLAGS='-mod=vendor' $(GOLANG_CONTAINER) go test ./...
 	docker build $(DOCKER_BUILD_OPTIONS) --build-arg IC_VERSION=$(VERSION)-$(GIT_COMMIT) --target container -f $(DOCKERFILEPATH)/$(DOCKERFILE) -t $(PREFIX):$(TAG) .
 
-push: container
+push: local-container
 ifeq ($(PUSH_TO_GCR),1)
 	gcloud docker -- push $(PREFIX):$(TAG)
 else

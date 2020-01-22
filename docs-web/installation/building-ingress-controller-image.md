@@ -5,7 +5,7 @@ This document explains how to build an Ingress Controller image. Note that for N
 ## Prerequisites
 
 Before you can build the image, make sure that the following software is installed on your machine:
-* [Docker](https://www.docker.com/products/docker)
+* [Docker](https://www.docker.com/products/docker) v18.09+
 * [GNU Make](https://www.gnu.org/software/make/)
 * [git](https://git-scm.com/)
 * [OpenSSL](https://www.openssl.org/), optionally, if you would like to generate a self-signed certificate and a key for the default server.
