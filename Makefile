@@ -9,6 +9,7 @@ GOLANG_CONTAINER = golang:1.13
 DOCKERFILEPATH = build
 DOCKERFILE = Dockerfile # note, this can be overwritten e.g. can be DOCKERFILE=DockerFileForPlus
 
+BUILD_IN_CONTAINER = 1
 PUSH_TO_GCR =
 GENERATE_DEFAULT_CERT_AND_KEY =
 DOCKER_BUILD_OPTIONS =
@@ -21,10 +22,14 @@ lint:
 	golangci-lint run
 
 test:
+ifneq ($(BUILD_IN_CONTAINER),1)
 	GO111MODULE=on GOFLAGS='-mod=vendor' go test ./...
+endif
 
 verify-codegen:
+ifneq ($(BUILD_IN_CONTAINER),1)
 	./hack/verify-codegen.sh
+endif
 
 update-codegen:
 	./hack/update-codegen.sh
@@ -35,15 +40,18 @@ ifeq ($(GENERATE_DEFAULT_CERT_AND_KEY),1)
 endif
 
 binary:
+ifneq ($(BUILD_IN_CONTAINER),1)
 	CGO_ENABLED=0 GO111MODULE=on GOFLAGS='-mod=vendor' GOOS=linux go build -installsuffix cgo -ldflags "-w -X main.version=${VERSION} -X main.gitCommit=${GIT_COMMIT}" -o nginx-ingress github.com/nginxinc/kubernetes-ingress/cmd/nginx-ingress
+endif
 
-local-container: test binary verify-codegen certificate-and-key
-	docker build $(DOCKER_BUILD_OPTIONS) --build-arg IC_VERSION=$(VERSION)-$(GIT_COMMIT) --target local -f $(DOCKERFILEPATH)/$(DOCKERFILE) -t $(PREFIX):$(TAG) .
-
-container: certificate-and-key
+container: test verify-codegen binary certificate-and-key
+ifeq ($(BUILD_IN_CONTAINER),1)
 	docker build $(DOCKER_BUILD_OPTIONS) --build-arg IC_VERSION=$(VERSION)-$(GIT_COMMIT) --target container -f $(DOCKERFILEPATH)/$(DOCKERFILE) -t $(PREFIX):$(TAG) .
+else
+	docker build $(DOCKER_BUILD_OPTIONS) --build-arg IC_VERSION=$(VERSION)-$(GIT_COMMIT) --target local -f $(DOCKERFILEPATH)/$(DOCKERFILE) -t $(PREFIX):$(TAG) .
+endif
 
-push: local-container
+push: container
 ifeq ($(PUSH_TO_GCR),1)
 	gcloud docker -- push $(PREFIX):$(TAG)
 else
