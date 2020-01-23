@@ -19,14 +19,9 @@ def enable_exporter_port(cli_arguments, kube_apis,
     :return:
     """
     namespace = ingress_controller_prerequisites.namespace
-    annotations = {"prometheus.io/scrape": "true", "prometheus.io/port": "9113"}
     port = V1ContainerPort(9113, None, None, "prometheus", 'TCP')
     print("------------------------- Enable 9113 port in IC -----------------------------------")
     body = kube_apis.apps_v1_api.read_namespaced_deployment(ingress_controller, namespace)
-    if body.spec.template.metadata.annotations is None:
-        body.spec.template.metadata.annotations = annotations
-    else:
-        body.spec.template.metadata.annotations.update(annotations)
     body.spec.template.spec.containers[0].ports.append(port)
 
     if cli_arguments['deployment-type'] == 'deployment':
