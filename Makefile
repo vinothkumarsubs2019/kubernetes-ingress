@@ -4,8 +4,6 @@ VERSION = edge
 TAG = $(VERSION)
 PREFIX = nginx/nginx-ingress
 
-DOCKER_TEST_RUN = docker run --rm -v $(shell pwd):/go/src/github.com/nginxinc/kubernetes-ingress -w /go/src/github.com/nginxinc/kubernetes-ingress
-GOLANG_CONTAINER = golang:1.13
 DOCKERFILEPATH = build
 DOCKERFILE = Dockerfile # note, this can be overwritten e.g. can be DOCKERFILE=DockerFileForPlus
 
