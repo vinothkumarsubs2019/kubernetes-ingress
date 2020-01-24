@@ -4,6 +4,7 @@ VERSION = edge
 TAG = $(VERSION)
 PREFIX = nginx/nginx-ingress
 
+GOLANG_CONTAINER = golang:1.13
 DOCKERFILEPATH = build
 DOCKERFILE = Dockerfile # note, this can be overwritten e.g. can be DOCKERFILE=DockerFileForPlus
 
@@ -12,7 +13,7 @@ PUSH_TO_GCR =
 GENERATE_DEFAULT_CERT_AND_KEY =
 DOCKER_BUILD_OPTIONS =
 
-GIT_COMMIT=$(shell git rev-parse --short HEAD)
+GIT_COMMIT = $(shell git rev-parse --short HEAD)
 
 export DOCKER_BUILDKIT = 1
 
@@ -44,7 +45,7 @@ endif
 
 container: test verify-codegen binary certificate-and-key
 ifeq ($(BUILD_IN_CONTAINER),1)
-	docker build $(DOCKER_BUILD_OPTIONS) --build-arg IC_VERSION=$(VERSION)-$(GIT_COMMIT) --target container -f $(DOCKERFILEPATH)/$(DOCKERFILE) -t $(PREFIX):$(TAG) .
+	docker build $(DOCKER_BUILD_OPTIONS) --build-arg IC_VERSION=$(VERSION)-$(GIT_COMMIT) --build-arg GIT_COMMIT=$(GIT_COMMIT) --build-arg VERSION=$(VERSION) --build-arg GOLANG_CONTAINER=$(GOLANG_CONTAINER) --target container -f $(DOCKERFILEPATH)/$(DOCKERFILE) -t $(PREFIX):$(TAG) .
 else
 	docker build $(DOCKER_BUILD_OPTIONS) --build-arg IC_VERSION=$(VERSION)-$(GIT_COMMIT) --target local -f $(DOCKERFILEPATH)/$(DOCKERFILE) -t $(PREFIX):$(TAG) .
 endif

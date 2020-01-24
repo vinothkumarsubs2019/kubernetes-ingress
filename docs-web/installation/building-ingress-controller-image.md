@@ -53,8 +53,8 @@ Next you will find the details about available Makefile targets and variables.
 ### Makefile Targets
 
 The **Makefile** we provide has the following targets:
-* **test**: runs unit tests.
-* **binary**: creates the controller binary.
+* **test**: runs unit tests (ignored when `BUILD_IN_CONTAINER` is `1`).
+* **binary**: creates the controller binary using local golang environment (ignored when `BUILD_IN_CONTAINER` is `1`).
 * **container**: builds a Docker image.
 * **push**: pushes the image to the private Docker registry.
 * **all** (the default target): executes the four targets above in the order listed. If one of the targets fails, the execution process stops, reporting an error.
