@@ -1,4 +1,4 @@
-ARG GOLANG_CONTAINER
+ARG GOLANG_CONTAINER=golang:latest
 
 FROM debian:stretch-slim AS base
 

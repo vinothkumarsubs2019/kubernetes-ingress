@@ -14,7 +14,7 @@ ENV NGINX_PLUS_VERSION 20-1~stretch
 ENV NGINX_OPENTRACING_MODULE_VERSION 20+0.9.0-1~stretch
 
 ARG IC_VERSION
-ARG GOLANG_CONTAINER
+ARG GOLANG_CONTAINER=golang:latest
 
 # Download certificate and key from the customer portal (https://cs.nginx.com)
 # and copy to the build context

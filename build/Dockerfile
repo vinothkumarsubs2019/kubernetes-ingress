@@ -1,4 +1,4 @@
-ARG GOLANG_CONTAINER
+ARG GOLANG_CONTAINER=golang:latest
 
 FROM nginx:1.17.7 AS base
 
