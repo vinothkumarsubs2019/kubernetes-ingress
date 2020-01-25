@@ -1,3 +1,5 @@
+ARG GOLANG_CONTAINER=golang:latest
+
 FROM debian:stretch-slim AS tracer-downloader
 ARG JAEGER_VERSION=v0.4.2
 
@@ -14,7 +16,6 @@ ENV NGINX_PLUS_VERSION 20-1~stretch
 ENV NGINX_OPENTRACING_MODULE_VERSION 20+0.9.0-1~stretch
 
 ARG IC_VERSION
-ARG GOLANG_CONTAINER=golang:latest
 
 # Download certificate and key from the customer portal (https://cs.nginx.com)
 # and copy to the build context
@@ -94,7 +95,7 @@ FROM base AS local
 COPY nginx-ingress /
 
 
-FROM golang:1.13 AS builder
+FROM $GOLANG_CONTAINER AS builder
 ARG VERSION
 ARG GIT_COMMIT
 WORKDIR /go/src/github.com/nginxinc/kubernetes-ingress/nginx-ingress/cmd/nginx-ingress
