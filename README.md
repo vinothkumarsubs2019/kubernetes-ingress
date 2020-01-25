@@ -78,3 +78,52 @@ If you'd like to contribute to the project, please read our [Contributing guide]
 
 For NGINX Plus customers NGINX Ingress controller (when used with NGINX Plus) is covered 
 by the support contract.
+
+
+#####################################
+cd ../kubernetes-ingress/
+    3  ll
+    4  cd deployments/
+    5  ll
+    6  cat README.md
+    7  pwd
+    8  kubectl apply -f common/ns-and-sa.yaml
+    9  kubectl apply -f rbac/rbac.yaml
+   10  kubectl apply -f common/default-server-secret.yaml
+   11  kubectl apply -f common/nginx-config.yaml
+   12  kubectl apply -f common/custom-resource-definitions.yaml
+   13  kubectl apply -f deployment/nginx-ingress.yaml
+   14  kubectl  get deploy
+   15  kubectl  get deploy  --all-namespaces
+   16  kubectl apply -f daemon-set/nginx-ingress.yaml
+   17  kubectl get pods --namespace=nginx-ingress
+   18  kubectl describe pod nginx-ingress-7f4b784f79-d6xsb -n nginx-ingress
+   19  kubeadm token create --print-join-command
+   20  kubect get nodes
+   21  kubectl get ndoes
+   22  kubectl get nodes
+   23  kubectl get pods --namespace=nginx-ingress
+   24  kubectl create -f service/nodeport.yaml
+   25  kubectl gegt all -n nginx-ingress
+   26  kubectl get all -n nginx-ingress
+   27  cd ../examples/complete-example/
+   28  ll
+   29  kubectl create -f cafe.yaml
+   30  kubectl create -f cafe-secret.yaml
+   31  kubectl create -f cafe-ingress.yaml
+   32  kubectl get pods
+   33  kubectl get all -n nginx-ingress
+   34  ll
+   35  cat cafe-ingress.yaml
+   36  vi cafe-ingress.yaml
+   37  kubectl apply -f cafe-ingress.yaml
+   38  kubectl get all -n nginx-ingress
+   39  kubectl logs pod/nginx-ingress-4ljhv -n nginx-ingress
+   40  export IC_IP=3.81.130.229
+   41  kubectl get all -n nginx-ingress
+   42  export IC_HTTPS_PORT=31951
+   43  curl --resolve ec2-3-81-130-229.compute-1.amazonaws.com:$IC_HTTPS_PORT:$IC_IP https://ec2-3-81-130-229.compute-1.amazonaws.com:$IC_HTTPS_PORT/coffee --insecure
+   44  kubectl get pods
+   45  kubectl get pods -o wide
+   46  history
+################################
